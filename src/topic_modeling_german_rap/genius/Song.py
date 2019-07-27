@@ -10,7 +10,7 @@ class Song:
         self._lyrics = kwargs.get('lyrics')
 
     @property
-    def lyric(self):
+    def lyrics(self):
         return self._lyrics
 
     @property

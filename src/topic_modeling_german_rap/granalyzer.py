@@ -4,7 +4,10 @@ import gensim
 import sys
 import pickle
 import csv
-from preprocessing import prepare_text_for_lda
+import collections
+import matplotlib.pyplot as plt
+import numpy as np
+from preprocessing import generate_unigrams, generate_bigrams
 from visualize import visualize_lda
 from genius.LyricsScraper import LyricsScraper
 from genius.Song import Song
@@ -19,7 +22,7 @@ class GermanRapAnalyzer:
             usage='''granalyzer <command> [<args>]
             The most commonly used git commands are:
    generate_corpus     Download lyrics
-   analyze_lyrics      Analyze lyrics
+   analyze_corpus      Analyze lyrics
             ''')
         parser.add_argument('command', help='Subcommand to run')
         args = parser.parse_args(sys.argv[1:2])
@@ -36,25 +39,49 @@ class GermanRapAnalyzer:
         artists = scraper.get_artists(artist_names)
         scraper.save_lyrics(artists)
 
-    def analyze_lyrics(self):
+    def analyze_corpus(self):
         corpus_data = self._get_csv_data()
 
-        self._display_lyrics_length(corpus_data)
+        word_frequency_tuples = self._get_most_frequent_unigrams_by_year(corpus_data,
+                                                                         lower_bound=1980,
+                                                                         upper_bound=2000)
+
+        self._display_most_frequent_unigrams_by_year(word_frequency_tuples)
+
+        word_frequency_tuples = self._get_most_frequent_unigrams_by_year(corpus_data,
+                                                                         lower_bound=2001,
+                                                                         upper_bound=2019)
+
+        self._display_most_frequent_unigrams_by_year(word_frequency_tuples)
+
+        word_frequency_tuples = self._get_most_frequent_bigrams_by_year(corpus_data,
+                                                                        lower_bound=1980,
+                                                                        upper_bound=2000)
+
+        self._display_most_frequent_bigrams_by_year(word_frequency_tuples)
+
+        word_frequency_tuples = self._get_most_frequent_bigrams_by_year(corpus_data,
+                                                                        lower_bound=2001,
+                                                                        upper_bound=2019)
+
+        self._display_most_frequent_bigrams_by_year(word_frequency_tuples)
 
     def _get_csv_data(self):
         """
-        Import the text data and the txt. file names in lists
+        Import the csv data and split it columns
         """
         corpus_data = []
 
-        with open('corpus/corpus.csv', newline='') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=' ', quotechar='|')
+        with open('corpus/corpus.csv', newline='', encoding='utf-8') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=';')
             for row in csv_reader:
-                song = Song(row[0], row[1], row[2], row[3])
+                song = Song(artist=row[0], title=row[1], year=int(row[2]), lyrics=row[3])
 
-                tokens = prepare_text_for_lda(song.lyrics)
+                unigrams = generate_unigrams(song.lyrics)
+                bigrams = generate_bigrams(song.lyrics)
                 song_data = {
-                    'tokens': tokens,
+                    'unigrams': unigrams,
+                    'bigrams': bigrams,
                     'artist': song.artist,
                     'title': song.title,
                     'year': song.year
@@ -64,14 +91,111 @@ class GermanRapAnalyzer:
 
         return corpus_data
 
-    def _display_lyrics_length(self, corpus_data):
+    def _get_lyrics_length(self, corpus_data):
         pass
         # TODO
 
-    def _display_most_frequent_words_grouped_by_year(self, corpus_data, lower_bound, upper_bound):
-        pass
-        # TODO: compute top 10 words before and after 2000
-        # TODO: unigram and bisgram
+    def _get_most_frequent_unigrams_by_year(self, corpus_data, lower_bound, upper_bound):
+        """
+        Compute top 10 unigrams and bigrams between certain bounds0
+        :param corpus_data:
+        :param lower_bound:
+        :param upper_bound:
+        :return:
+        """
+        word_count = collections.defaultdict(int)
+
+        number_of_filtered_items = 0
+
+        corpus_data = filter(lambda corpus_item: lower_bound <= corpus_item['year'] <= upper_bound, corpus_data)
+        for song_data in corpus_data:
+            number_of_filtered_items += 1
+            for token in song_data['unigrams']:
+                word_count[token] += 1
+        logging.debug("{} songs lie between {} and {}".format(number_of_filtered_items, lower_bound, upper_bound))
+
+        return_frequency_tuples = []
+
+        total_number_of_tokens = sum(word_count.values())
+        word_count_sorted = sorted(word_count.items(), key=lambda kv: kv[1])
+        word_count_sorted = collections.OrderedDict(word_count_sorted)
+
+        for token, count in word_count_sorted.items():
+            return_frequency_tuples.append((token, count / total_number_of_tokens))
+
+        return_frequency_tuples = return_frequency_tuples[-10:]
+        return_frequency_tuples = return_frequency_tuples[::-1]
+
+        logging.debug("The frequncies from {} to {} are {}".format(lower_bound, upper_bound, return_frequency_tuples))
+
+        return return_frequency_tuples
+
+    def _get_most_frequent_bigrams_by_year(self, corpus_data, lower_bound, upper_bound):
+        """
+        Compute top 10 unigrams and bigrams between certain bounds0
+        :param corpus_data:
+        :param lower_bound:
+        :param upper_bound:
+        :return:
+        """
+        word_count = collections.defaultdict(int)
+
+        number_of_filtered_items = 0
+
+        corpus_data = filter(lambda corpus_item: lower_bound <= corpus_item['year'] <= upper_bound, corpus_data)
+        for song_data in corpus_data:
+            number_of_filtered_items += 1
+            for token in song_data['bigrams']:
+                word_count[token] += 1
+        logging.debug("{} songs lie between {} and {}".format(number_of_filtered_items, lower_bound, upper_bound))
+
+        return_frequency_tuples = []
+
+        total_number_of_tokens = sum(word_count.values())
+        word_count_sorted = sorted(word_count.items(), key=lambda kv: kv[1])
+        word_count_sorted = collections.OrderedDict(word_count_sorted)
+
+        for token, count in word_count_sorted.items():
+            return_frequency_tuples.append((token, count / total_number_of_tokens))
+
+        return_frequency_tuples = return_frequency_tuples[-10:]
+        return_frequency_tuples = return_frequency_tuples[::-1]
+
+        logging.debug("The frequncies from {} to {} are {}".format(lower_bound, upper_bound, return_frequency_tuples))
+
+        return return_frequency_tuples
+
+    def _display_most_frequent_unigrams_by_year(self, frequency_tuples):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        tokens = [frequency_tuple[0] for frequency_tuple in frequency_tuples]
+        frequencies = [frequency_tuple[1] for frequency_tuple in frequency_tuples]
+
+        ax.bar(tokens, frequencies)
+
+        ax.set_xticklabels(tokens, rotation='horizontal', fontsize=6)
+
+        ax.set_xlabel('Wörter')
+        ax.set_ylabel('Relative Häufigkeit')
+
+        plt.show()
+
+    def _display_most_frequent_bigrams_by_year(self, frequency_tuples):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        tokens = [' '.join(frequency_tuple[0]) for frequency_tuple in frequency_tuples]
+        frequencies = [frequency_tuple[1] for frequency_tuple in frequency_tuples]
+
+        ax.bar(tokens, frequencies)
+
+        ax.set_xticklabels(tokens, rotation='horizontal', fontsize=6)
+
+        ax.set_xlabel('Wörter')
+        ax.set_ylabel('Relative Häufigkeit')
+
+        plt.show()
 
     def _display_sentiment_score_grouped_by_year(self, corpus_data, lower_bound, upper_bound):
         pass

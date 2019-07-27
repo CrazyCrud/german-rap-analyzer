@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import csv
 from .config import access_token
 from .Song import Song
@@ -26,7 +27,7 @@ class LyricsScraper:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 for line in f:
-                    if line is not None and len(line) > 0:
+                    if line is not None and len(line) > 0 and line[0] != '#':
                         return_artist_names.append(line)
 
         except Exception as e:
@@ -39,7 +40,7 @@ class LyricsScraper:
         for artist_name in artist_names:
             logging.debug("Search for artist {}".format(artist_name))
 
-            artist = self._genius.search_artist(artist_name, max_songs=1)
+            artist = self._genius.search_artist(artist_name, max_songs=15)
             return_artists.append(artist)
 
         return return_artists
@@ -51,7 +52,9 @@ class LyricsScraper:
             for artist in artists:
                 songs = artist.songs
                 for song in songs:
-                    song = Song(lyrics_genius_song=song)
-                    # saved_file = song.save(output_dir=self._output_dir)
+                    year = 0
+                    if song.year is not None:
+                        year = int(song.year[:4])
+                    song = Song(artist=song.artist, title=song.title, year=year, lyrics=song.lyrics)
 
                     csv_writer.writerow([song.artist, song.title, song.year, song.process_song_lyric()])
