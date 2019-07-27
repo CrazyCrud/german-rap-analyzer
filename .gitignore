@@ -47,3 +47,7 @@ MANIFEST
 
 # Per-project virtualenvs
 .venv*/
+
+env/
+
+src/topic_modeling_german_rap/genius/config.py
