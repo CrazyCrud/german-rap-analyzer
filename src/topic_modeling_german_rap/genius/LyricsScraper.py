@@ -49,6 +49,8 @@ class LyricsScraper:
         csv_file = os.path.join(self._output_dir, 'corpus.csv')
         with open(csv_file, 'w', newline='', encoding='utf-8') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow('artist', 'title', 'year', 'lyrics')
+
             for artist in artists:
                 songs = artist.songs
                 for song in songs:
