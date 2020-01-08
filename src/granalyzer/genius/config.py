@@ -1,3 +1,0 @@
-client_id = "SVQfQN5tdrzQXWN4xDM9Bhvat0cOdiUzhlIUz_CslIfI0OATKIxxtCeKbIqSejJc"
-client_secret = "EuFY6aHAY2dgjIcOPqWKQ_kK28TFKiIGeo-DOX0K2e3-Dwddf21cs14vRrn-vMegPP3uNXgACBTZBVe0QSGutA"
-access_token = "01w_Se7qUJW3ZomldOTB4ON4XauBpIysr8FZJLcYETknjh6qYCsVrwngXC0Vjjmd"

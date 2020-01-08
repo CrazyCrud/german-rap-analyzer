@@ -50,4 +50,4 @@ MANIFEST
 
 env/
 
-src/topic_modeling_german_rap/genius/config.py
+src/granalyzer/genius/config.py
