@@ -25,17 +25,17 @@ class Song:
     def artist(self):
         return self._artist
 
-    def process_song_lyric(self):
-        return re.sub(r'\[.*\]', '', self._lyrics)
+    def clean_lyrics(self):
+        words = re.sub(r'[\(\[].*?[\)\]]', '', self._lyrics)
+        words = os.linesep.join([s for s in words.splitlines() if s])
+        return words
 
     def save(self, output_dir, ext='txt'):
-        return self._write_txt(output_dir, ext)
-
-    def _write_txt(self, output_dir, ext):
         filename = self._sanitize_filename(output_dir, ext)
+
         if not os.path.isfile(filename):
-            pass
-            # TODO: save lyrics
+            with open(filename, "w", encoding='utf8') as f:
+                print(f"{self.clean_lyrics()}", file=f)
         return filename
 
     def _sanitize_filename(self, output_dir, ext):
