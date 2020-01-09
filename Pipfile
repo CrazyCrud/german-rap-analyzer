@@ -12,6 +12,9 @@ spacy = "*"
 pyLDAvis = "*"
 lyricsgenius = "*"
 pandas = "*"
+matplotlib = "*"
+wordcloud = "*"
+sklearn = "*"
 
 [requires]
 python_version = "3.6"

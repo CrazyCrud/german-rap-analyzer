@@ -55,7 +55,11 @@ The most commonly used commands are:
         corpus.load_csv()
         corpus.prepare_corpus()
 
+        corpus.compute_number_of_words()
+
         corpus.compute_lexical_richness()
+
+        corpus.compute_wordcloud()
 
 
 if __name__ == '__main__':

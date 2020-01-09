@@ -1,5 +1,5 @@
 # Advanced Chemistry
-# Torch
+Torch
 # Fünf Sterne deluxe
 # Ferris MC
 Stieber Twins
@@ -17,4 +17,4 @@ Hiob
 # Haze76
 # 3Plusss
 # Audio88
-# Morlockk Dilemma
+Morlockk Dilemma
