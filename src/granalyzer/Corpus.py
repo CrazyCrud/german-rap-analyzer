@@ -6,6 +6,9 @@ import spacy
 from spacy.lang.de.stop_words import STOP_WORDS
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+import copy
+from collections import OrderedDict
+from collections import Counter
 import nltk
 from nltk.corpus import wordnet as wn
 
@@ -80,16 +83,25 @@ class Corpus:
             plt.axis("off")
             plt.show()
 
-    def compute_TF(self):
+    def compute_tf(self):
         df_lyrics = self._df_songs.groupby('artist').agg({'lyrics': 'sum'})
 
+        all_words = []
+
         for index, row in df_lyrics.iterrows():
-            df = pd.DataFrame(columns=('word', 'tf'))
+            all_words += row['lyrics']
 
-            words_count = len(row['lyrics'])
+        lexicon = sorted(set(all_words))
+        zero_vector = OrderedDict((token, 0) for token in lexicon)
 
-            for word, count in word_dict.items():
-                df[word] = count / float(words_count)
+        doc_vectors = []
+
+        for index, row in df_lyrics.iterrows():
+            vec = copy.copy(zero_vector)
+            token_counts = Counter(row['lyrics'])
+            for key, value in token_counts.items():
+                vec[key] = value / len(lexicon)
+            doc_vectors.append(vec)
 
     @staticmethod
     def prepare_text(text):

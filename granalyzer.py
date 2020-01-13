@@ -61,6 +61,8 @@ The most commonly used commands are:
 
         corpus.compute_wordcloud()
 
+        corpus.compute_tf()
+
 
 if __name__ == '__main__':
     Granalyzer()
